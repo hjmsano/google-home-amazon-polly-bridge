@@ -53,7 +53,13 @@ npm install
 npm start
 ```
 
-## Environment Variables
+## Variables
+
+For the detail of Amazon Polly related variables, see [Amazon's Document for SynthesizeSpeech](https://docs.aws.amazon.com/polly/latest/dg/API_SynthesizeSpeech.html).
+
+### Environment Variables
+
+All of these environment variables are required.
 
 |Variable|Sample|Note|
 |:----|:----|:----|
@@ -62,11 +68,23 @@ npm start
 |AWS_REGION|`ap-northeast-1`|AWS Region|
 |POLLY_LANG|`en-GB`|Polly Language|
 |POLLY_VOICE|`Brian`|Polly Voice| 
-|POLLY_TYPE|`text`|Polly supports a plain text & SSML|
-|POLLY_SAMPLE_RATE|`22050`|Polly sample rate|
+|POLLY_TYPE|`text`|Polly supports a plain text & ssml|
+|POLLY_SAMPLE_RATE|`22050`|Polly audio sampling rate|
 |HTTP_PORT|`8080`|A port number of http server|
 |HTTP_HOST|`192.168.0.2`|An IP address of http server|
 |GOOGLE_HOME|`Kitchen`|A name or an IP address of Google Home|
+
+### GET parameters
+
+You can specify settings for Polly and a target Google Home through GET parameter when you call the endpoint.
+
+|Variable|Sample|Note|
+|:----|:----|:----|
+|lang|`ja-JP`|Polly Language|
+|voice|`Takumi`|Polly Voice|
+|type|`ssml`|Type of the input text|
+|rate|`16000`|Sampling rate|
+|target|`BedRoom`|A name or an IP address of Google Home|
 
 ## Usage
 
@@ -74,6 +92,12 @@ Just send a POST request with a text as a request body to the endpoint. You can 
 
 ```sh
 curl localhost:8080 -X POST -d 'If you can dream it, you can do it.'
+```
+
+or, you can overwrite settings by using GET parameter
+
+```sh
+curl -X POST http://localhost:8080/?lang=ja-JP\&voice=Takumi\&type=ssml -d '<speak>夢は、<break time="200ms"/><emphasis>叶う</emphasis></speak>'
 ```
 
 ## Use case

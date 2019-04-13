@@ -3,6 +3,7 @@ const aws = require('aws-sdk');
 const mdns = require('mdns-js');
 const cast = require('castv2-client');
 const http = require('http');
+const url = require('url');
 const ip = require('ip');
 
 const host = process.env.HTTP_HOST || ip.address();
@@ -18,18 +19,22 @@ const startServer = () => {
     let voiceData;
     http.createServer((request, response) => {
         if (request.method === 'POST') {
+            const vars = config(request.url);
             let postBody = '';
             let responseBody = '';
             request.on('data', (chunk) => {
                 postBody += chunk;
             }).on('end', () => {
-                generateVoice(process.env.POLLY_LANG, process.env.POLLY_VOICE, process.env.POLLY_TYPE, process.env.POLLY_SAMPLE_RATE, postBody).then(data => {
-                    responseBody = `will speak "${postBody}".`;
+                generateVoice(vars.lang, vars.voice, vars.type, vars.rate, postBody).then(data => {
                     voiceData = data.AudioStream;
                     response.writeHead(200, {'Content-Type': 'text/plain'});
-                    response.end(responseBody);
+                    response.end('ok\n');
+                    console.log({
+                        settings: vars,
+                        message: postBody
+                    });
                 }).then(() => {
-                    findDevice(process.env.GOOGLE_HOME).then((targetIp) => {
+                    findDevice(vars.target).then((targetIp) => {
                         transmitCommand(targetIp);
                     });
                 });
@@ -39,6 +44,17 @@ const startServer = () => {
             response.end(voiceData);
         }
     }).listen(port);
+};
+
+const config = (requestUrl) => {
+    const urlObj = url.parse(requestUrl, true);
+    return {
+        lang: urlObj.query.lang || process.env.POLLY_LANG,
+        voice: urlObj.query.voice || process.env.POLLY_VOICE,
+        type: urlObj.query.type || process.env.POLLY_TYPE,
+        rate: urlObj.query.rate || process.env.POLLY_SAMPLE_RATE,
+        target: urlObj.query.target || process.env.GOOGLE_HOME
+    };
 };
 
 const generateVoice = (lang, voiceId, textType, sampleRate, text) => {
