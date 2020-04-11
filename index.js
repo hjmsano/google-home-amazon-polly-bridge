@@ -35,7 +35,7 @@ const startServer = () => {
                     });
                 }).then(() => {
                     findDevice(vars.target).then((targetIp) => {
-                        transmitCommand(targetIp);
+                        transmitCommand(targetIp, postBody);
                     });
                 });
             });
@@ -83,22 +83,27 @@ const generateVoice = (lang, voiceId, textType, sampleRate, text) => {
     });
 };
 
-const transmitCommand = (targetIp) => {
+const transmitCommand = (targetIp, text) => {
     const castClient = new cast.Client();
     const defaultReceiver = cast.DefaultMediaReceiver;
     castClient.connect(targetIp, () => {
         castClient.launch(defaultReceiver, (error, player) => {
             if (error) {
-                throw new Error(error);
+                console.log(error);
             }
             player.load({
                 contentId: `http://${host}:${port}/`,
                 contentType: 'audio/mp3',
                 streamType: 'BUFFERED',
+                metadata: {
+                    type: 0,
+                    metadataType: 0,
+                    title: text
+                }
             }, {autoplay: true}, (error, status) => {
                 castClient.close();
                 if (error) {
-                    throw new Error(error);
+                    console.log(error);
                 }
             });
         });
