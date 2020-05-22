@@ -49,8 +49,8 @@ googlehome-polly-bridge
 - Then, run the following two commands.
 
 ```sh
-npm install
-npm start
+yarn install
+yarn start
 ```
 
 ## Variables
